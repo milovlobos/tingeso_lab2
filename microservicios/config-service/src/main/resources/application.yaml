@@ -6,7 +6,7 @@ spring:
       server:
         git:
           default-label: main
-          uri: https://github.com/BenjaminMoya/tingeso-ev2
+          uri: https://github.com/milovlobos/tingeso_lab2
           search-paths: config-data
   application:
     name: config-service
