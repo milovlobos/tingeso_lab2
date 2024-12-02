@@ -1,0 +1,26 @@
+pipeline {
+    agent any
+    stages {
+        stage("Build Frontend") {
+            steps {
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/milovlobos/tingeso-.git']])
+                dir("frontend") {
+                    bat 'npm install'
+                    bat 'npm run build'
+                }
+            }
+        }
+
+        stage("Build and Push Docker Image") {
+            steps {
+                dir("frontend") {
+                    withCredentials([usernamePassword(credentialsId: 'credentialsId', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                        bat "docker login -u %USER% -p %PASS%"
+                        bat "docker build -t milovlobos/tingeso-front:latest ."
+                        bat 'docker push milovlobos/tingeso-front:latest'
+                    }
+                }
+            }
+        }
+    }
+}

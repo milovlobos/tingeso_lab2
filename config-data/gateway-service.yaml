@@ -1,0 +1,60 @@
+server:
+  port: 8080
+
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      default-zone: http://localhost:8761/eureka
+    instance:
+      hostname: localhost
+
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/user/**
+        - id: credit-service
+          uri: lb://credit-service
+          predicates:
+            - Path=/credit/**
+        - id: file-service
+          uri: lb://file-service
+          predicates:
+            - Path=/file/**
+        - id: simulation-service
+          uri: lb://simulation-service
+          predicates:
+            - Path=/simulation/**
+        - id: evaluation-service
+          uri: lb://evaluation-service
+          predicates:
+            - Path=/evaluation/**
+        - id: tracking-service
+          uri: lb://tracking-service
+          predicates:
+            - Path=/tracking/**
+        - id: costs-service
+          uri: lb://costs-service
+          predicates:
+            - Path=/cost/**
