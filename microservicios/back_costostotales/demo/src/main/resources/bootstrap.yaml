@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: cost-service
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:8081
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/cost
+    username: postgres
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: update

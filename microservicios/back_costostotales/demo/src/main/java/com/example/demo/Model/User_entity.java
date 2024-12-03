@@ -1,4 +1,4 @@
 package com.example.demo.Model;
 
-public class user_model {
+public class User_entity {
 }
