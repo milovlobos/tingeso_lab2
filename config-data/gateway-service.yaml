@@ -30,31 +30,27 @@ spring:
         locator:
           enabled: true
       routes:
-        - id: user-service
-          uri: lb://user-service
+        - id: user_service
+          uri: lb://user_service
           predicates:
             - Path=/user/**
-        - id: credit-service
-          uri: lb://credit-service
+        - id: credit_service
+          uri: lb://credit_service
           predicates:
             - Path=/credit/**
         - id: file-service
           uri: lb://file-service
           predicates:
             - Path=/file/**
-        - id: simulation-service
-          uri: lb://simulation-service
+        - id: evaluate_service
+          uri: lb://evaluate_service
           predicates:
-            - Path=/simulation/**
-        - id: evaluation-service
-          uri: lb://evaluation-service
-          predicates:
-            - Path=/evaluation/**
+            - Path=/evaluate/**
         - id: tracking-service
           uri: lb://tracking-service
           predicates:
             - Path=/tracking/**
-        - id: costs-service
-          uri: lb://costs-service
+        - id: totalcost_service
+          uri: lb://totalcost_service
           predicates:
             - Path=/cost/**
