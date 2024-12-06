@@ -50,3 +50,12 @@ spring:
           uri: lb://totalcost_service
           predicates:
             - Path=/api/totalcost/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # Expone todos los endpoints de Actuator
+  endpoint:
+    gateway:
+      enabled: true # Habilita los endpoints relacionados con Gateway
