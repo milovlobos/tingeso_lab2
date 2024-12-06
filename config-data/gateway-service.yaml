@@ -27,27 +27,27 @@ spring:
           enabled: true
       routes:
         - id: user_service
-          uri: lb://user_service
+          uri: lb://USER_SERVICE
           predicates:
             - Path=/api/user/**
         - id: credit_service
-          uri: lb://credit_service
+          uri: lb://CREDIT_SERVICE
           predicates:
             - Path=/api/credit/**
         - id: file-service
-          uri: lb://file-service
+          uri: lb://FILE-SERVICE	
           predicates:
             - Path=/api/file/**
         - id: evaluate_service
-          uri: lb://evaluate_service
+          uri: lb://EVALUATE_SERVICE
           predicates:
             - Path=/api/evaluate/**
         - id: tracking-service
-          uri: lb://tracking-service
+          uri: lb://TRACKING-SERVICE	
           predicates:
             - Path=/api/state/**
         - id: totalcost_service
-          uri: lb://totalcost_service
+          uri: lb://TOTALCOST_SERVICE
           predicates:
             - Path=/api/totalcost/**
 
