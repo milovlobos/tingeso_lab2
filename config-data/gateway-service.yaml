@@ -10,7 +10,7 @@ eureka:
     instance:
       hostname: localhost
 
-pring:
+spring:
   cloud:
     gateway:
       globalcors:
