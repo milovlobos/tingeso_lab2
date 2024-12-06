@@ -25,7 +25,7 @@ public class Credit_entity {
     private float interest; // interés anual
     private int time; // plazo anual
     private int diner; // monto del financiamiento, % del valor de la propiedad
-    private int state; // estado de la solicitud
+
     private LocalDate date; // fecha de solicitud
 
 

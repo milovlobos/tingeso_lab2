@@ -1,6 +1,6 @@
 spring:
   application:
-    name: cost-service
+    name: evaluate_service
   cloud:
     config:
       enabled: true

@@ -33,24 +33,24 @@ spring:
         - id: user_service
           uri: lb://user_service
           predicates:
-            - Path=/user/**
+            - Path=/api/user/**
         - id: credit_service
           uri: lb://credit_service
           predicates:
-            - Path=/credit/**
+            - Path=/api/credit/**
         - id: file-service
           uri: lb://file-service
           predicates:
-            - Path=/file/**
+            - Path=/api/file/**
         - id: evaluate_service
           uri: lb://evaluate_service
           predicates:
-            - Path=/evaluate/**
+            - Path=/api/evaluate/**
         - id: tracking-service
           uri: lb://tracking-service
           predicates:
-            - Path=/tracking/**
+            - Path=/api/state/**
         - id: totalcost_service
           uri: lb://totalcost_service
           predicates:
-            - Path=/cost/**
+            - Path=/api/totalcost/**

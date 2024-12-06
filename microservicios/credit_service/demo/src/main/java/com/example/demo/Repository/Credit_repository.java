@@ -18,7 +18,7 @@ public interface Credit_repository extends JpaRepository<Credit_entity,Long> {
     public List<Credit_entity> findByType(int type);
 
 
-    public List<Credit_entity> findByState(int state);
+
 
 
     public List<Credit_entity> findByInterest(float interest);

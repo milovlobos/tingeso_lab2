@@ -1,6 +1,6 @@
 spring:
   application:
-    name: credit-service
+    name: credit_service
   cloud:
     config:
       enabled: true
