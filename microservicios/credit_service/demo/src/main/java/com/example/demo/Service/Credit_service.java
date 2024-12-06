@@ -49,7 +49,7 @@ public class Credit_service {
         credit_entity.setDate(date);
         credit_repository.save(credit_entity);
         // Llamar al endpoint "/new/{idcredit}/{state}" usando RestTemplate
-        String url = "http://state-service/new/{idcredit}/{state}";
+        String url = "http://tracking-service/api/state/new/{idcredit}/{state}";
 
         // Reemplazar los valores dinámicos en la URL
         Map<String, Object> uriVariables = new HashMap<>();
@@ -79,7 +79,7 @@ public class Credit_service {
         credit_entity.setDate(date);
         credit_repository.save(credit_entity);
         // Llamar al endpoint "/new/{idcredit}/{state}" usando RestTemplate
-        String url = "http://state-service/new/{idcredit}/{state}";
+        String url = "http://tracking-service/api/state/new/{idcredit}/{state}";
 
         // Reemplazar los valores dinámicos en la URL
         Map<String, Object> uriVariables = new HashMap<>();
@@ -111,7 +111,7 @@ public class Credit_service {
 
         credit_repository.save(credit_entity);
         // Llamar al endpoint "/new/{idcredit}/{state}" usando RestTemplate
-        String url = "http://state-service/new/{idcredit}/{state}";
+        String url = "http://tracking-service/api/state/new/{idcredit}/{state}";
 
         // Reemplazar los valores dinámicos en la URL
         Map<String, Object> uriVariables = new HashMap<>();
@@ -140,7 +140,7 @@ public class Credit_service {
         credit_entity.setDate(date);
         credit_repository.save(credit_entity);
         // Llamar al endpoint "/new/{idcredit}/{state}" usando RestTemplate
-        String url = "http://state-service/new/{idcredit}/{state}";
+        String url = "http://tracking-service/api/state/new/{idcredit}/{state}";
 
         // Reemplazar los valores dinámicos en la URL
         Map<String, Object> uriVariables = new HashMap<>();
