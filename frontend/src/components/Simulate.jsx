@@ -6,6 +6,7 @@ import FormControl from "@mui/material/FormControl";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import creditService from "../services/credit.service"; 
+import totalcostService from "../services/totalcost.service";
 
 const PaycheckList = () => {
     
@@ -26,7 +27,7 @@ const PaycheckList = () => {
         const interestValue = interest; 
         const years = time; 
 
-        creditService.simulateCredit(amount, interestValue, years)
+        totalcostService.simulateCredit(amount, interestValue, years)
             .then(response => {
                 setSimulationResult(response.data);  
             })

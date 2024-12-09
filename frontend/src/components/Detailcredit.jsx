@@ -4,6 +4,8 @@ import { Box, Button, Typography, Card, CardContent, Select, MenuItem, FormContr
 import creditService from "../services/credit.service";
 import userService from "../services/user.service";
 import evaluateService from "../services/evaluate.service";
+import stateservice from "../services/state.service";
+import totalcostService from "../services/totalcost.service";
 import fileService from "../services/file.service"; // Importar el servicio de archivos
 
 const EvaluateCredit = () => {
@@ -22,64 +24,66 @@ const EvaluateCredit = () => {
   const [creditEvaluationScore, setCreditEvaluationScore] = useState(null);
   const [documents, setDocuments] = useState([]); // Estado para documentos
   const [creditHistory, setCreditHistory] = useState(false); // Estado para credit_history
+  const [creditState, setCreditState] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const id = localStorage.getItem("creditId");
-    if (!id) {
-      setError("ID de crédito no encontrado en localStorage.");
-      return;
-    }
+  // Almacenar idcredit una vez al inicio
+  const idcredit = parseInt(localStorage.getItem("creditId"), 10);
 
-    const idcredit = parseInt(id, 10);
-    if (isNaN(idcredit)) {
-      setError("ID de crédito inválido.");
-      return;
+  // Validar el ID al inicio
+  useEffect(() => {
+    if (!idcredit || isNaN(idcredit)) {
+      setError("ID de crédito inválido o no encontrado en localStorage.");
     }
+  }, [idcredit]);
+
+  // Cargar datos principales del crédito, usuario y estado
+  useEffect(() => {
+    if (!idcredit || isNaN(idcredit)) return;
 
     creditService.getCreditbyid(idcredit)
       .then((response) => {
         setCredit(response.data);
-        const iduser = Number(response.data.iduser);
-        return userService.get(iduser);
+        return Promise.all([
+          userService.get(response.data.iduser),
+          stateservice.getCreditbyid(idcredit),
+        ]);
       })
-      .then((userResponse) => {
+      .then(([userResponse, stateResponse]) => {
         setUser(userResponse.data);
+        setCreditState(stateResponse.data);
       })
       .catch((err) => {
-        console.error("Error al cargar los detalles del crédito o del usuario:", err);
-        setError("Error al cargar los detalles del crédito o del usuario.");
+        console.error("Error al cargar los detalles del crédito, usuario o estado:", err);
+        setError("Error al cargar los detalles del crédito, usuario o estado.");
       });
 
-    // Obtener los documentos asociados al crédito
+    // Obtener documentos
     fileService.getFilesByCreditId(idcredit)
-      .then((response) => {
-        setDocuments(response.data); // Almacena la lista de documentos en el estado
-      })
+      .then((response) => setDocuments(response.data))
       .catch((err) => console.error("Error al cargar los documentos:", err));
-  }, []);
+  }, [idcredit]);
 
+  // Calcular costos del crédito
   useEffect(() => {
-    if (credit) {
-      creditService.getMonthlyCost(credit.diner, credit.interest, credit.time)
-        .then((response) => {
-          const monthlyCostValue = response.data;
-          setMonthlyCost(monthlyCostValue);
-          return creditService.getFinalCost(monthlyCostValue, credit.time, credit.diner);
-        })
-        .then((response) => setFinalCost(response.data))
-        .catch((err) => console.error("Error al calcular los costos:", err));
-    }
+    if (!credit) return;
+
+    totalcostService.getMonthlyCost(credit.diner, credit.interest, credit.time)
+      .then((response) => {
+        setMonthlyCost(response.data);
+        return totalcostService.getFinalCost(response.data, credit.time, credit.diner);
+      })
+      .then((response) => setFinalCost(response.data))
+      .catch((err) => console.error("Error al calcular los costos:", err));
   }, [credit]);
 
   const handleAdvancePhase = () => {
-    const idcredit = parseInt(localStorage.getItem("creditId"), 10);
     if (!idcredit || isNaN(idcredit)) {
       setError("ID de crédito inválido.");
       return;
     }
 
-    creditService.updatestate(idcredit, selectedPhase)
+    stateservice.updatestate(idcredit, selectedPhase)
       .then(() => {
         alert("El crédito ha pasado a la siguiente fase.");
         window.location.reload();
@@ -88,13 +92,12 @@ const EvaluateCredit = () => {
   };
 
   const handleReject = () => {
-    const idcredit = parseInt(localStorage.getItem("creditId"), 10);
     if (!idcredit || isNaN(idcredit)) {
       setError("ID de crédito inválido.");
       return;
     }
 
-    creditService.updatestate(idcredit, 7)
+    stateservice.updatestate(idcredit, 7)
       .then(() => {
         alert("El crédito ha sido rechazado.");
         window.location.reload();
@@ -104,10 +107,13 @@ const EvaluateCredit = () => {
 
   const handleSavingEvaluation = () => {
     if (user && credit) {
-      const isConsistentSaving = Boolean(consistentSaving);
-      const isPeriodicDeposit = Boolean(periodicDeposit);
-
-      evaluateService.evaluateSavingCapacity(user.id, credit.diner, isConsistentSaving, isPeriodicDeposit, maxMonthlyOut)
+      evaluateService.evaluateSavingCapacity(
+        user.id,
+        credit.diner,
+        consistentSaving,
+        periodicDeposit,
+        maxMonthlyOut
+      )
         .then((response) => setSavingEvaluation(response.data))
         .catch((err) => console.error("Error al evaluar capacidad de ahorro:", err));
     }
@@ -116,7 +122,17 @@ const EvaluateCredit = () => {
   const handleCreditEvaluation = () => {
     if (user && credit) {
       const propertyType = credit.type === 1 ? 1 : 2;
-      evaluateService.evaluateCreditApplication(user.id, monthlyCost, user.balance, totalDebt, propertyValue, credit.diner, propertyType, credit.time, creditHistory)
+      evaluateService.evaluateCreditApplication(
+        user.id,
+        monthlyCost,
+        user.balance,
+        totalDebt,
+        propertyValue,
+        credit.diner,
+        propertyType,
+        credit.time,
+        creditHistory
+      )
         .then((response) => setCreditEvaluationScore(response.data))
         .catch((err) => console.error("Error al evaluar la solicitud de crédito:", err));
     }
@@ -139,6 +155,8 @@ const EvaluateCredit = () => {
     return <Typography>{error || "Cargando detalles del crédito..."}</Typography>;
   }
 
+
+
   return (
     <Box sx={{ padding: 3 }}>
       <Typography variant="h4" gutterBottom>
@@ -159,14 +177,14 @@ const EvaluateCredit = () => {
           <Typography><strong>Plazo:</strong> {credit.time} años</Typography>
           <Typography><strong>Fecha de Solicitud:</strong> {credit.date}</Typography>
           <Typography><strong>Estado:</strong> {
-            credit.state === 1 ? 'Revisión inicial' :
-            credit.state === 2 ? 'Pendiente de documentos' :
-            credit.state === 3 ? 'En Evaluación' :
-            credit.state === 4 ? 'Pre-aprobado' :
-            credit.state === 5 ? 'Aprobación Final' :
-            credit.state === 6 ? 'Aprobada' :
-            credit.state === 7 ? 'Rechazada' : 
-            credit.state === 8 ? 'Cancelada por el cliente' : 'Desembolso'
+            creditState  === 1 ? 'Revisión inicial' :
+            creditState  === 2 ? 'Pendiente de documentos' :
+            creditState  === 3 ? 'En Evaluación' :
+            creditState  === 4 ? 'Pre-aprobado' :
+            creditState  === 5 ? 'Aprobación Final' :
+            creditState  === 6 ? 'Aprobada' :
+            creditState  === 7 ? 'Rechazada' : 
+            creditState  === 8 ? 'Cancelada por el cliente' : 'Desembolso'
           }</Typography>
         </CardContent>
       </Card>
@@ -303,6 +321,8 @@ const EvaluateCredit = () => {
       </Box>
     </Box>
   );
-};
+}
+
+
 
 export default EvaluateCredit;

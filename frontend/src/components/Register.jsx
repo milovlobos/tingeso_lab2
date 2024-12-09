@@ -155,7 +155,7 @@ const Register = () => {
         <TextField
           label="Antigüedad de Cuenta"
           type="number"
-          inputProps={{ min: 18 }}
+          inputProps={{ min: 0 }}
           value={accountSeniority}
           onChange={(e) => setAccountSeniority(e.target.value)}
           variant="outlined"

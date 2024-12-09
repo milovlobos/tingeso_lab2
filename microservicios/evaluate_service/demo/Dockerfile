@@ -1,4 +1,4 @@
 FROM openjdk:17
-ARG JAR_FILE=target/back.jar
-COPY ${JAR_FILE} back.jar
-ENTRYPOINT ["java", "-jar","/back.jar"]
+ARG JAR_FILE=demo/target/evaluation-service-0.0.1-SNAPSHOT.jar
+COPY ${JAR_FILE} evaluation-service-0.0.1-SNAPSHOT.jar
+ENTRYPOINT ["java", "-jar","/evaluation-service-0.0.1-SNAPSHOT.jar"]

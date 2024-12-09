@@ -4,12 +4,14 @@ import { Box, Grid, Card, CardContent, Typography, Button, TextField } from "@mu
 import { Link } from "react-router-dom";
 import creditService from "../services/credit.service";
 import { useNavigate } from "react-router-dom";
+import stateService from "../services/state.service";
 
 const CreditSearch = () => {
   const [credits, setCredits] = useState([]);
   const [filteredCredits, setFilteredCredits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [creditStates, setCreditStates] = useState({});
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useState({
     id: "",
@@ -36,12 +38,29 @@ const CreditSearch = () => {
         setCredits(response.data);
         setFilteredCredits(response.data);
         setLoading(false);
+  
+        // Obtener el estado de cada crédito
+        const promises = response.data.map((credit) =>
+          stateService.getCreditbyid(credit.id)
+            .then((res) => ({ id: credit.id, state: res.data }))
+            .catch(() => ({ id: credit.id, state: null })) // Manejo de errores
+        );
+  
+        Promise.all(promises)
+          .then((states) => {
+            const stateMap = states.reduce((acc, { id, state }) => {
+              acc[id] = state;
+              return acc;
+            }, {});
+            setCreditStates(stateMap);
+          });
       })
       .catch(() => {
         setError("Error al cargar las postulaciones.");
         setLoading(false);
       });
   }, []);
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -166,15 +185,25 @@ const CreditSearch = () => {
                     <strong>Fecha de Solicitud:</strong> {credit.date}
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Estado de la Solicitud:</strong> {credit.state === 1 ? 'Revisión inicial': 
-                                                              credit.state === 2 ? 'Pendiente de documentos':
-                                                              credit.state === 3 ? 'En Evaluación':
-                                                              credit.state === 4 ? 'Pre-aprobado':
-                                                              credit.state === 5 ? 'Aprobación Final':
-                                                              credit.state === 6 ? 'Aprobada':
-                                                              credit.state === 7 ? 'Rechazada':
-                                                              credit.state === 8 ? 'Cancelada por el cliente' : 'Desembolso'}
-                  </Typography>
+                  <strong>Estado del Crédito:</strong>{" "}
+  {creditStates[credit.id] === 1
+    ? 'Revisión inicial'
+    : creditStates[credit.id] === 2
+    ? 'Pendiente de documentos'
+    : creditStates[credit.id] === 3
+    ? 'En Evaluación'
+    : creditStates[credit.id] === 4
+    ? 'Pre-aprobado'
+    : creditStates[credit.id] === 5
+    ? 'Aprobación Final'
+    : creditStates[credit.id] === 6
+    ? 'Aprobada'
+    : creditStates[credit.id] === 7
+    ? 'Rechazada'
+    : creditStates[credit.id] === 8
+    ? 'Cancelada por el cliente'
+    : 'Desconocido'}
+</Typography>
 
                   <Button 
                     variant="contained" 

@@ -5,10 +5,10 @@ import com.example.demo.Service.User_service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
+import java.util.Optional;
 
+@RestController
 @RequestMapping("/api/user")
-@CrossOrigin("*")
 public class User_controller {
     @Autowired
     private User_service user_service;
@@ -30,7 +30,7 @@ public class User_controller {
     }
 
     @GetMapping("/findbyid/id")
-    public User_entity findbyid(@RequestParam int id) {
+    public Optional<User_entity> findbyid(@RequestParam Long id) {
         return user_service.getUser_byid(id);
     }
 
@@ -60,7 +60,7 @@ public class User_controller {
     }
 
     @GetMapping("/get")
-    public User_entity get_user(@RequestParam Long user_id) {
+    public Optional<User_entity> get_user(@RequestParam Long user_id) {
         return user_service.getUser_byid(user_id);
     }
 

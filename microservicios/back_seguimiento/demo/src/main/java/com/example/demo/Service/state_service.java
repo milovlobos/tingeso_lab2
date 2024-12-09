@@ -25,6 +25,9 @@ state_repository state_repository;
         state_repository.save(state_entity);
         return true;
     }
+    public int getstate(long id){
+        return state_repository.getByIdCredit(id).getState();
+    }
 
     public int updateState(long id_credit, int state_new) {
         try {

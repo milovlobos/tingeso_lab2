@@ -60,8 +60,11 @@ public class capacity_service {
     // R7. Capacidad de Ahorro
     // R71: Saldo Mínimo Requerido
     public boolean checkMinimumBalance(long userId, double creditAmount) {
-        // Obtenemos el usuario directamente, asumiendo que findById devuelve User_entity o null
-        User_entity user = restTemplate.getForObject("http://user-service/api/user/findbyid/id", User_entity.class, userId);
+        // Construimos la URL con el parámetro
+        String url = "http://user-service/api/user/get?user_id={userId}";
+
+        // Hacemos la solicitud con RestTemplate, pasando el parámetro userId
+        User_entity user = restTemplate.getForObject(url, User_entity.class, userId);
 
         // Verificamos el balance del usuario
         return user.getBalance() >= creditAmount * 0.1;
@@ -86,15 +89,23 @@ public class capacity_service {
 
     // R74: Relación Saldo/Años de Antigüedad
     public boolean checkSavingsBalanceAndSeniority(long userId, double creditAmount) {
-        User_entity user =  restTemplate.getForObject("http://user-service/api/user/findbyid/id", User_entity.class, userId);
+        // Construimos la URL con el parámetro
+        String url = "http://user-service/api/user/get?user_id={userId}";
+
+        // Hacemos la solicitud con RestTemplate, pasando el parámetro userId
+        User_entity user = restTemplate.getForObject(url, User_entity.class, userId);
         double requiredBalanceRatio = (user.getAccount_seniority() < 2) ? 0.2 : 0.1;
         return user.getBalance() >= creditAmount * requiredBalanceRatio;
     }
 
     // R75: Retiros Recientes
     public boolean checkRecentWithdrawals(Double maxMonthlyOut, long iduser) {
-        User_entity user =  restTemplate.getForObject("http://user-service/api/user/findbyid/id", User_entity.class, iduser);
-            if (maxMonthlyOut > user.getBalance() * 0.3) return false;
+        // Construimos la URL con el parámetro
+        String url = "http://user-service/api/user/get?user_id={userId}";
+
+        // Hacemos la solicitud con RestTemplate, pasando el parámetro userId
+        User_entity user = restTemplate.getForObject(url, User_entity.class, iduser);
+        if (maxMonthlyOut > user.getBalance() * 0.3) return false;
 
         return true;
     }
@@ -122,7 +133,11 @@ public class capacity_service {
     }
 
     public List<String> evaluateCreditApplication(long userId, double monthlyPayment, double income, double totalDebt, double propertyValue, double loanAmount, int propertyType, int loanTerm,Boolean historial_credit) {
-        User_entity user =  restTemplate.getForObject("http://user-service/api/user/findbyid/id", User_entity.class, userId);
+        // Construimos la URL con el parámetro
+        String url = "http://user-service/api/user/get?user_id={userId}";
+
+        // Hacemos la solicitud con RestTemplate, pasando el parámetro userId
+        User_entity user = restTemplate.getForObject(url, User_entity.class, userId);
         List<String> evaluationMessages = new ArrayList<>();
 
         // Verificación de relación cuota/ingreso

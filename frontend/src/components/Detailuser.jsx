@@ -1,16 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, Typography, Card, CardContent } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  Card,
+  CardContent,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material"; // Importación de FormControl, InputLabel, Select y MenuItem
 import creditService from "../services/credit.service";
 import userService from "../services/user.service";
+import totalcostService from "../services/totalcost.service";
+import stateService from "../services/state.service";
+
 
 const Detail = () => {
   const [credit, setCredit] = useState(null);
-  const [user, setUser] = useState(null); 
+  const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
   const [selectedPhase, setSelectedPhase] = useState(2);
   const [monthlyCost, setMonthlyCost] = useState(null);
   const [finalCost, setFinalCost] = useState(null);
+  const [creditState, setCreditState] = useState(null);
 
   const navigate = useNavigate();
 
@@ -20,38 +34,45 @@ const Detail = () => {
       setError("ID de crédito no encontrado en localStorage.");
       return;
     }
-
+  
     const idcredit = parseInt(id, 10);
     if (isNaN(idcredit)) {
       setError("ID de crédito inválido.");
       return;
     }
-
-    creditService.getCreditbyid(idcredit)
+  
+    creditService
+      .getCreditbyid(idcredit)
       .then((response) => {
-        console.log("Credit data:", response.data); 
+        console.log("Credit data:", response.data);
         setCredit(response.data);
-
+  
         const iduser = Number(response.data.iduser);
-        return userService.get(iduser);
+  
+        // Obtener estado del crédito en paralelo con datos de usuario
+        return Promise.all([userService.get(iduser), stateService.getCreditbyid(idcredit)]);
       })
-      .then((userResponse) => {
-        console.log("User data:", userResponse.data); 
+      .then(([userResponse, stateResponse]) => {
+        console.log("User data:", userResponse.data);
         setUser(userResponse.data);
+  
+        console.log("State data:", stateResponse.data);
+        setCreditState(stateResponse.data); // Guarda el estado del crédito
       })
       .catch((err) => {
-        console.error("Error al cargar los detalles del crédito o del usuario:", err);
-        setError("Error al cargar los detalles del crédito o del usuario.");
+        console.error("Error al cargar los detalles del crédito, usuario o estado:", err);
+        setError("Error al cargar los detalles del crédito, usuario o estado.");
       });
   }, []);
+  
    // Calcular los costos mensuales y finales al cargar los datos del crédito
    useEffect(() => {
     if (credit) {
-      creditService.getMonthlyCost(credit.diner, credit.interest, credit.time)
+      totalcostService.getMonthlyCost(credit.diner, credit.interest, credit.time)
         .then((response) => {
           const monthlyCostValue = response.data;
           setMonthlyCost(monthlyCostValue);
-          return creditService.getFinalCost(monthlyCostValue, credit.time, credit.diner);
+          return totalcostService.getFinalCost(monthlyCostValue, credit.time, credit.diner);
         })
         .then((response) => setFinalCost(response.data))
         .catch((err) => console.error("Error al calcular los costos:", err));
@@ -67,7 +88,7 @@ const Detail = () => {
       return;
     }
 
-    creditService.updatestate(idcredit, 5)
+    stateService.updatestate(idcredit, 5)
       .then(() => {
         alert("El crédito ha pasado a la siguiente fase.");
         window.location.reload();
@@ -83,7 +104,7 @@ const Detail = () => {
       return;
     }
 
-    creditService.updatestate(idcredit, 7)
+    stateService.updatestate(idcredit, 7)
       .then(() => {
         alert("El crédito ha sido rechazado.");
         window.location.reload();
@@ -115,18 +136,18 @@ const Detail = () => {
           <Typography><strong>Plazo:</strong> {credit.time} años</Typography>
           <Typography><strong>Fecha de Solicitud:</strong> {credit.date}</Typography>
           <Typography><strong>Estado:</strong> {
-              credit.state === 1 ? 'Revisión inicial' :
-              credit.state === 2 ? 'Pendiente de documentos' :
-              credit.state === 3 ? 'En Evaluación' :
-              credit.state === 4 ? 'Pre-aprobado' :
-              credit.state === 5 ? 'Aprobación Final' :
-              credit.state === 6 ? 'Aprobada' :
-              credit.state === 7 ? 'Rechazada' : 
-              credit.state === 8 ? 'Cancelada por el cliente' : 'Desembolso'
+              creditState  === 1 ? 'Revisión inicial' :
+              creditState  === 2 ? 'Pendiente de documentos' :
+              creditState  === 3 ? 'En Evaluación' :
+              creditState  === 4 ? 'Pre-aprobado' :
+              creditState  === 5 ? 'Aprobación Final' :
+              creditState  === 6 ? 'Aprobada' :
+              creditState  === 7 ? 'Rechazada' : 
+              creditState  === 8 ? 'Cancelada por el cliente' : 'Desembolso'
           }</Typography>
 
          {/* Mostrar los costos totales antes del botón Aceptar si el estado es Pre-aprobado */}
-{credit.state === 4 && (
+{creditState=== 4 && (
   <Box sx={{ marginTop: 2 }}>
     <Typography variant="body2">
       <strong>Costos Totales:</strong>
@@ -143,7 +164,7 @@ const Detail = () => {
 
       <Box sx={{ marginTop: 3 }}>
         {/* Muestra el selector de fase solo si el estado no es Pre-aprobado */}
-        {credit.state !== 4 && (
+        {creditState !== 4 && (
           <FormControl sx={{ minWidth: 120, marginBottom: 2 }}>
             <InputLabel>Fase</InputLabel>
             <Select
@@ -158,9 +179,7 @@ const Detail = () => {
                 },
               }}
             >
-              <MenuItem value={2}>Pendiente de documentos</MenuItem>
-              <MenuItem value={3}>En Evaluación</MenuItem>
-              <MenuItem value={4}>Pre-aprobado</MenuItem>
+              
               <MenuItem value={6}>Aprobada</MenuItem>
             </Select>
           </FormControl>

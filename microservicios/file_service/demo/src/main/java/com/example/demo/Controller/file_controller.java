@@ -13,7 +13,6 @@ import java.util.List;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
-@CrossOrigin("*")
 @RequestMapping("/api/file")
 
 public class file_controller {

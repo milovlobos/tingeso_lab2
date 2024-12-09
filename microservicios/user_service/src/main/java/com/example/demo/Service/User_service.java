@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class User_service {
@@ -62,7 +63,7 @@ public class User_service {
     public User_entity getUser_byemail(String email) {
         return user_repo.findByEmail(email);
     }
-    public User_entity getUser_byid(long id) {
+    public Optional<User_entity> getUser_byid(Long id) {
         return user_repo.findById(id);
     }
 

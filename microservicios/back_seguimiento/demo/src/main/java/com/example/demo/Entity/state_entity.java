@@ -15,7 +15,7 @@ public class state_entity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(unique = true, nullable = false)
-    private Long id;
+    private long id;
     private long idCredit;
     private int state;
     // fecha de solicitud

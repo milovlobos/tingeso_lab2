@@ -2,36 +2,66 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import creditService from "../services/credit.service";
 import { Box, Grid, Card, CardContent, Typography, Button } from "@mui/material";
+import stateService from "../services/state.service";
 
 const PostulacionesList = () => {
   const [credits, setCredits] = useState([]);
+  const [creditStates, setCreditStates] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const iduserString = localStorage.getItem("userId");
-    const iduser = parseInt(iduserString, 10);
+    const fetchCredits = async () => {
+      try {
+        const iduserString = localStorage.getItem("userId");
+        const iduser = parseInt(iduserString, 10);
 
-    creditService.getCreditsByUser(iduser)
-      .then((response) => {
-        setCredits(response.data);
+        if (isNaN(iduser)) {
+          setError("Usuario no válido.");
+          setLoading(false);
+          return;
+        }
+
+        // Obtener los créditos por usuario
+        const response = await creditService.getCreditsByUser(iduser);
+        const credits = response.data;
+
+        setCredits(credits);
+
+        // Crear un mapa para almacenar los estados de los créditos
+        const stateMap = {};
+        for (const credit of credits) {
+          if (credit.id) {
+            try {
+              const stateResponse = await stateService.getCreditbyid(credit.id);
+              stateMap[credit.id] = stateResponse.data;
+            } catch (error) {
+              console.error(`Error al obtener el estado del crédito ${credit.id}:`, error);
+              stateMap[credit.id] = null; // Manejar errores
+            }
+          } else {
+            console.warn("Crédito sin idcredit:", credit);
+          }
+        }
+
+        setCreditStates(stateMap); // Guardar los estados
         setLoading(false);
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error("Error al cargar las postulaciones:", error);
         setError("Error al cargar las postulaciones.");
         setLoading(false);
-      });
+      }
+    };
+
+    fetchCredits();
   }, []);
 
   const handleCancelCredit = (creditId) => {
-    creditService.updatestate(creditId, 8) // Estado 8 = Cancelado por el cliente
+    stateService.updatestate(creditId, 8) // Estado 8 = Cancelado por el cliente
       .then(() => {
         alert("El crédito ha sido cancelado.");
-        window.location.reload()
-        setCredits((prevCredits) =>
-          prevCredits.filter((credit) => credit.id !== creditId)
-        );
+        setCredits((prevCredits) => prevCredits.filter((credit) => credit.id !== creditId));
       })
       .catch(() => {
         alert("Error al cancelar el crédito.");
@@ -73,35 +103,40 @@ const PostulacionesList = () => {
                     <strong>Fecha de Solicitud:</strong> {credit.date}
                   </Typography>
                   <Typography variant="body2">
-                    <strong>Estado de la Solicitud:</strong> {credit.state === 1 ? 'Revisión inicial': 
-                                                              credit.state === 2 ? 'Pendiente de documentos':
-                                                              credit.state === 3 ? 'En Evaluación':
-                                                              credit.state === 4 ? 'Pre-aprobado':
-                                                              credit.state === 5 ? 'Aprobación Final':
-                                                              credit.state === 6 ? 'Aprobada':
-                                                              credit.state === 7 ? 'Rechazada':
-                                                              credit.state === 8 ? 'Cancelada por el cliente':'Desembolso'}
+                    <strong>Estado de la Solicitud:</strong>{" "}
+                    {creditStates[credit.id] === 1
+                      ? "Revisión inicial"
+                      : creditStates[credit.id] === 2
+                      ? "Pendiente de documentos"
+                      : creditStates[credit.id] === 3
+                      ? "En Evaluación"
+                      : creditStates[credit.id] === 4
+                      ? "Pre-aprobado"
+                      : creditStates[credit.id] === 5
+                      ? "Aprobación Final"
+                      : creditStates[credit.id] === 6
+                      ? "Aprobada"
+                      : creditStates[credit.id] === 7
+                      ? "Rechazada"
+                      : creditStates[credit.id] === 8
+                      ? "Cancelada por el cliente"
+                      : "Desconocido"}
                   </Typography>
-                  {credit.state === 4 && (
-                    <Button 
-                      variant="contained" 
-                      color="secondary" 
+
+                  {creditStates[credit.id] === 4 && (
+                    <Button
+                      variant="contained"
+                      color="secondary"
                       sx={{ marginTop: 2 }}
-                      onClick={() => { 
-                        if (credit.id) { 
-                          localStorage.setItem('creditId', credit.id); 
-                          console.log(`Credit ID saved: ${credit.id}`);
-                          navigate(`/detailuser`); 
-                        } else {
-                          console.error("El ID del crédito no está definido.");
-                        }
+                      onClick={() => {
+                        localStorage.setItem("creditId", credit.id);
+                        navigate(`/detailuser`);
                       }}
                     >
                       Ver Costos Totales
                     </Button>
                   )}
-                  
-                  {/* Botón para cancelar el crédito */}
+
                   <Button
                     variant="outlined"
                     color="error"

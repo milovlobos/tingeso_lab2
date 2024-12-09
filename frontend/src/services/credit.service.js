@@ -21,17 +21,17 @@ const createCreditType4 = (data) => {
 const getCreditsByUser = (iduser) => {
     return httpCredit.get(`/api/credit/getcredit?iduser=${iduser}`);
 }
-const simulateCredit = (amount, interest, years) => {
-    // Construimos la URL con los valores de amount, interest y years
-    return httpCredit.post(`/api/credit/simulation/${amount}/${interest}/${years}`);
-};
 const getAll = () => {
     return httpCredit.get('/api/credit/getall');
 }
 
-const updatestate = (idcredit,state) => {
-    return httpCredit.post(`/api/credit/update/${idcredit}/${state}`);
+
+const simulateCredit = (amount, interest, years) => {
+    // Construimos la URL con los valores de amount, interest y years
+    return httpCredit.post(`/api/credit/simulation/${amount}/${interest}/${years}`);
 };
+
+
 const getCreditbyid = (idcredit) => {
     return httpCredit.get(`/api/credit/getcreditid?id=${idcredit}`);
 }
@@ -55,7 +55,6 @@ export default {
     getCreditsByUser,
     simulateCredit,
     getAll,
-    updatestate,
     getCreditbyid,
     getMonthlyCost,
     getFinalCost
