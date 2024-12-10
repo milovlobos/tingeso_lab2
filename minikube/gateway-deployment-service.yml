@@ -10,22 +10,22 @@ spec:
       app: gateway-deployment
   replicas: 1
   template:
-      metadata:
-        labels:
-          app: gateway-deployment
-      spec:
-        containers:
-          - name: kubernetes-gateway
-            image: milovlobos/gateway-service:latest
-            ports:
-              - containerPort: 8080
-            env:
-              - name: SPRING_CLOUD_CONFIG_URI
-                value: http://config-service:8081
-              - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-                value: http://eureka-service:8761
-              - name: eureka.instance.preferIpAddress
-                value: "true"
+    metadata:
+      labels:
+        app: gateway-deployment
+    spec:
+      containers:
+        - name: kubernetes-gateway
+          image: milovlobos/gateway-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_CLOUD_CONFIG_URI
+              value: http://config-service:8081
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-service:8761
+            - name: eureka.instance.preferIpAddress
+              value: "true"
 ---
 apiVersion: v1
 kind: Service
@@ -40,4 +40,5 @@ spec:
     - protocol: TCP
       port: 8080
       targetPort: 8080
-  type: LoadBalancer
+      nodePort: 31700
+  type: NodePort
