@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evaluation-deployment
+  labels:
+    app: evaluation-deployment
+spec:
+  selector:
+    matchLabels:
+      app: evaluation-deployment
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: evaluation-deployment
+    spec:
+      containers:
+        - name: kubernetes-evaluation
+          image: milovlobos/evaluate_service:latest
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_CLOUD_CONFIG_URI
+              value: http://config-service:8081
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-service:8761
+            - name: eureka.instance.preferIpAddress
+              value: "true"
+            - name: POSTGRES_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-evaluationdb
+                  key: POSTGRES_DB_HOST
+            - name: POSTGRES_DB_EVALUATION
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-evaluationdb
+                  key: POSTGRES_DB_EVALUATION
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-user-credentials
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-user-credentials
+                  key: POSTGRES_PASSWORD
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: evaluation-service
+  labels:
+    app: evaluation-service
+spec:
+  selector:
+    app: evaluation-deployment
+  ports:
+    - protocol: TCP
+      port: 8092
+      targetPort: 8092
+  type: LoadBalancer

@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: credit-deployment
+  labels:
+    app: credit-deployment
+spec:
+  selector:
+    matchLabels:
+      app: credit-deployment
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: credit-deployment
+    spec:
+      containers:
+        - name: kubernetes-credit
+          image: milovlobos/credit-service:latest
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_CLOUD_CONFIG_URI
+              value: http://config-service:8081
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-service:8761
+            - name: eureka.instance.preferIpAddress
+              value: "true"
+            - name: POSTGRES_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-creditdb
+                  key: POSTGRES_DB_HOST
+            - name: POSTGRES_DB_CREDIT
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-creditdb
+                  key: POSTGRES_DB_CREDIT
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-user-credentials
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-user-credentials
+                  key: POSTGRES_PASSWORD
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: credit-service
+  labels:
+    app: credit-service
+spec:
+  selector:
+    app: credit-deployment
+  ports:
+    - protocol: TCP
+      port: 8091
+      targetPort: 8091
+  type: LoadBalancer

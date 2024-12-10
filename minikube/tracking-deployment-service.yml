@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracking-deployment
+  labels:
+    app: tracking-deployment
+spec:
+  selector:
+    matchLabels:
+      app: tracking-deployment
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: tracking-deployment
+    spec:
+      containers:
+        - name: kubernetes-tracking
+          image: milovlobos/tracking-service:latest
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_CLOUD_CONFIG_URI
+              value: http://config-service:8081
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-service:8761
+            - name: eureka.instance.preferIpAddress
+              value: "true"
+            - name: POSTGRES_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-trackingdb
+                  key: POSTGRES_DB_HOST
+            - name: POSTGRES_DB_TRACKING
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-trackingdb
+                  key: POSTGRES_DB_TRACKING
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-user-credentials
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-user-credentials
+                  key: POSTGRES_PASSWORD
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracking-service
+  labels:
+    app: tracking-service
+spec:
+  selector:
+    app: tracking-deployment
+  ports:
+    - protocol: TCP
+      port: 8095
+      targetPort: 8095
+  type: LoadBalancer
